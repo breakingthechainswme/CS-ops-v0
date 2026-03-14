@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Master Prompt Builder — User Guide</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap');
+:root {
+  --bg:#f2f0eb; --white:#fff; --dark:#1a1917; --ink:#2a2826; --muted:#6f6d69;
+  --border:#dddbd6; --border2:#c5c2bc;
+  --gold:#b5830a; --gold-light:#fdf4e3; --gold-border:#e8c96a; --gold-mid:#d4a017;
+  --amber:#7a4f0a; --green:#1a6b3a; --green-bg:#edf7f1; --green-border:#a8d9bc;
+  --blue:#1a3a6b; --blue-bg:#e8f0fb; --blue-border:#a8c0e8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font-family:'IBM Plex Sans',sans-serif;font-size:15px;line-height:1.75;min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(181,131,10,.07) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(26,58,107,.06) 0%,transparent 60%)}
+
+.wrap{max-width:820px;margin:0 auto;padding:0 24px 100px}
+
+/* Header */
+.header{background:linear-gradient(135deg,#1a1917 0%,#2c2620 60%,#1a2a1a 100%);border-radius:0 0 20px 20px;margin:0 -24px 48px;padding:40px 40px 36px;position:relative;overflow:hidden}
+.header::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 10% 50%,rgba(181,131,10,.18) 0%,transparent 55%),radial-gradient(ellipse at 90% 20%,rgba(45,106,79,.15) 0%,transparent 50%);pointer-events:none}
+.h-eye{font-family:'IBM Plex Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:10px}
+.header h1{font-size:32px;font-weight:600;color:#fff;line-height:1.1;margin-bottom:10px}
+.header p{font-size:14px;color:rgba(255,255,255,.6);max-width:560px;line-height:1.7}
+.header-meta{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px}
+.hm{font-family:'IBM Plex Mono',monospace;font-size:11px;color:rgba(255,255,255,.4);border:1px solid rgba(255,255,255,.12);padding:4px 10px;border-radius:999px}
+
+/* TOC */
+.toc{background:var(--white);border:1px solid var(--border);border-radius:16px;padding:24px 28px;margin-bottom:40px;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+.toc-title{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.toc ol{list-style:none;counter-reset:toc}
+.toc li{counter-increment:toc;display:flex;gap:10px;padding:6px 0;border-bottom:1px solid var(--border);font-size:14px}
+.toc li:last-child{border-bottom:none}
+.toc li::before{content:counter(toc,decimal-leading-zero);font-family:'IBM Plex Mono',monospace;font-size:11px;color:var(--muted);flex-shrink:0;margin-top:2px}
+.toc a{color:var(--dark);text-decoration:none;font-weight:500}
+.toc a:hover{color:var(--gold)}
+
+/* Section headings */
+.sec-label{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);display:flex;align-items:center;gap:10px;margin-bottom:20px;margin-top:56px}
+.sec-label::after{content:'';height:1px;background:linear-gradient(90deg,var(--border2),transparent);flex:1}
+h2{font-size:22px;font-weight:600;color:var(--dark);line-height:1.2;margin-bottom:12px}
+h3{font-size:16px;font-weight:600;color:var(--dark);margin-bottom:8px;margin-top:24px}
+p{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:14px}
+p strong{color:var(--ink)}
+
+/* Cards */
+.card{background:var(--white);border:1px solid var(--border);border-radius:14px;padding:22px 24px;margin-bottom:14px;box-shadow:0 1px 3px rgba(0,0,0,.04);position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--card-top,transparent);border-radius:14px 14px 0 0}
+.card.gold::before{background:linear-gradient(90deg,var(--gold-mid),var(--gold))}
+.card.green::before{background:linear-gradient(90deg,#2d6a4f,#52b788)}
+.card.blue::before{background:linear-gradient(90deg,#1a3a6b,#2d5abf)}
+.card.plum::before{background:linear-gradient(90deg,#6b3fa0,#9b6dcc)}
+.card.rust::before{background:linear-gradient(90deg,#8b3a1a,#d4602a)}
+
+/* Step flow */
+.step-flow{display:flex;flex-direction:column;gap:0}
+.step-row{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid var(--border)}
+.step-row:last-child{border-bottom:none}
+.step-num{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--dark);color:#fff;border-radius:6px;padding:3px 8px;flex-shrink:0;margin-top:2px}
+.step-name{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:3px}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.step-tip{font-size:12px;color:var(--gold);margin-top:4px;font-style:italic}
+
+/* Callouts */
+.callout{border-radius:0 10px 10px 0;padding:13px 16px;margin:14px 0;font-size:13px;line-height:1.65;display:flex;gap:10px}
+.callout.blue{background:var(--blue-bg);border-left:3px solid var(--blue);color:var(--blue)}
+.callout.amber{background:var(--gold-light);border-left:3px solid var(--gold-mid);color:var(--amber)}
+.callout.green{background:var(--green-bg);border-left:3px solid var(--green);color:var(--green)}
+
+/* Type grid */
+.type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.type-pill{background:var(--white);border:1px solid var(--border2);border-radius:10px;padding:12px 14px;display:flex;gap:12px;align-items:flex-start}
+.type-icon{font-size:18px;flex-shrink:0;margin-top:1px}
+.type-name{font-size:13px;font-weight:600;color:var(--dark);margin-bottom:2px}
+.type-use{font-size:12px;color:var(--muted);line-height:1.5}
+
+/* Pipeline */
+.pipeline{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:16px 0}
+.pipe-node{background:var(--white);border:1px solid var(--border2);border-radius:8px;padding:8px 14px;font-size:12px;font-weight:600;color:var(--dark);text-align:center}
+.pipe-node.idea{border-color:var(--gold-border);background:var(--gold-light);color:var(--amber)}
+.pipe-node.hook{border-color:var(--blue-border);background:var(--blue-bg);color:var(--blue)}
+.pipe-node.script{border-color:var(--green-border);background:var(--green-bg);color:var(--green)}
+.pipe-arrow{color:var(--gold-border);font-size:16px}
+
+/* Field reference table */
+.field-table{width:100%;border-collapse:collapse;font-size:13px;margin:12px 0}
+.field-table th{font-family:'IBM Plex Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2);background:var(--bg)}
+.field-table td{padding:9px 12px;border-bottom:1px solid var(--border);vertical-align:top;line-height:1.55;color:var(--muted)}
+.field-table tr:last-child td{border-bottom:none}
+.field-table td:first-child{font-weight:600;color:var(--dark);white-space:nowrap}
+.field-table td:nth-child(2){color:var(--ink)}
+
+/* FAQ */
+.faq-item{border-bottom:1px solid var(--border);padding:16px 0}
+.faq-q{font-size:14px;font-weight:600;color:var(--dark);margin-bottom:8px}
+.faq-a{font-size:13px;color:var(--muted);line-height:1.7}
+
+@media(max-width:640px){
+  .header{padding:28px 20px 24px;margin:0 -24px 32px}
+  .header h1{font-size:24px}
+  .type-grid{grid-template-columns:1fr}
+  .pipeline{flex-direction:column;align-items:flex-start}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<!-- Floating builder button — always visible while reading the guide -->
+<a href="index.html" target="_blank" rel="noopener" id="builderBtn"
+   style="position:fixed;bottom:28px;right:24px;z-index:999;
+          display:flex;align-items:center;gap:8px;
+          background:linear-gradient(135deg,#1a1917,#2c2620);
+          color:#fff;text-decoration:none;
+          font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;
+          padding:10px 18px;border-radius:999px;
+          box-shadow:0 4px 16px rgba(0,0,0,.28);
+          border:1px solid rgba(255,255,255,.12);
+          transition:all .18s ease">
+  <span style="font-size:15px">⚡</span> Open Builder
+</a>
+<style>#builderBtn:hover{box-shadow:0 6px 22px rgba(0,0,0,.38);transform:translateY(-2px)}</style>
+
+<div class="header">
+  <div class="h-eye">Content Studio — Reference</div>
+  <h1>Master Prompt Builder<br>User Guide</h1>
+  <p>Everything you need to use the builder from scratch — what each step does, how to link prompts together, how the project tracker works, and answers to common questions.</p>
+  <div class="header-meta">
+    <div class="hm">Builder v0.5</div>
+    <div class="hm">8 prompt types</div>
+    <div class="hm">Idea → Hook → Script pipeline</div>
+  </div>
+  <div style="margin-top:20px;position:relative;z-index:1">
+    <a href="index.html" target="_blank" rel="noopener"
+       style="display:inline-flex;align-items:center;gap:8px;
+              background:rgba(255,255,255,.1);color:#fff;text-decoration:none;
+              font-family:'IBM Plex Sans',sans-serif;font-size:13px;font-weight:500;
+              padding:9px 18px;border-radius:999px;
+              border:1px solid rgba(255,255,255,.2);
+              transition:background .18s"
+       onmouseover="this.style.background='rgba(255,255,255,.2)'"
+       onmouseout="this.style.background='rgba(255,255,255,.1)'">
+      ⚡ Open the builder
+    </a>
+  </div>
+</div>
+
+<!-- TOC -->
+<div class="toc">
+  <div class="toc-title">Contents</div>
+  <ol>
+    <li><a href="#what">What this tool is</a></li>
+    <li><a href="#types">The 8 prompt types — when to use each</a></li>
+    <li><a href="#steps">Step-by-step walkthrough</a></li>
+    <li><a href="#pipeline">Linking prompts — Idea → Hook → Script</a></li>
+    <li><a href="#output">Reading the output screen</a></li>
+    <li><a href="#projects">Projects and the pipeline tracker</a></li>
+    <li><a href="#snapshots">Snapshots — saving your work</a></li>
+    <li><a href="#notion">Saving to Notion</a></li>
+    <li><a href="#tips">Tips for better prompts</a></li>
+    <li><a href="#faq">FAQ</a></li>
+  </ol>
+</div>
+
+
+<!-- 1. WHAT IT IS -->
+<div class="sec-label" id="what">01 — What this tool is</div>
+<h2>A structured prompt engineering assistant</h2>
+<p>The Master Prompt Builder is a step-by-step form that helps you build complete, professional AI prompts without having to remember frameworks or start from a blank page every time.</p>
+<p>Instead of typing a vague instruction into Claude or ChatGPT and hoping for the best, you fill in guided fields — audience, platform, constraints, tone, format — and the builder assembles a fully structured prompt from your answers. Every prompt it outputs follows the same consistent structure, which makes results more predictable and easier to improve over time.</p>
+
+<div class="callout blue">💡 <div><strong>What it is not:</strong> The builder is not an AI itself. It doesn't generate content — it generates the <em>prompt</em> you use to get content from Claude, ChatGPT, or any other AI tool. Think of it as a briefing form that turns your creative direction into precise instructions for an AI.</div></div>
+
+<div class="card blue">
+  <h3>The core workflow in one sentence</h3>
+  <p style="margin-bottom:0">Fill in the builder → copy the assembled prompt → paste it into your AI tool → get consistent, structured output.</p>
+</div>
+
+
+<!-- 2. TYPES -->
+<div class="sec-label" id="types">02 — The 8 prompt types</div>
+<h2>Choose the right type first</h2>
+<p>The very first step is selecting a prompt type. This determines every step that follows — the fields shown, the questions asked, and how the final prompt is assembled. Picking the wrong type won't break anything, but picking the right one gives you more relevant fields.</p>
+
+<div class="type-grid">
+  <div class="type-pill"><div class="type-icon">✦</div><div><div class="type-name">Idea</div><div class="type-use">Generate batches of content ideas. Best starting point — use this first when you don't have a topic yet.</div></div></div>
+  <div class="type-pill"><div class="type-icon">↗</div><div><div class="type-name">Hook</div><div class="type-use">Write opening lines for Reels, carousels, ads, or emails. Use after you have an idea to build from.</div></div></div>
+  <div class="type-pill"><div class="type-icon">▣</div><div><div class="type-name">Script</div><div class="type-use">Full video or carousel scripts. Use after you have both an idea and a hook if linking them.</div></div></div>
+  <div class="type-pill"><div class="type-icon">∞</div><div><div class="type-name">Generator</div><div class="type-use">Multi-format output — captions, subject lines, post batches. Good for bulk content creation.</div></div></div>
+  <div class="type-pill"><div class="type-icon">◌</div><div><div class="type-name">Analysis</div><div class="type-use">Audience research, competitor review, performance breakdowns.</div></div></div>
+  <div class="type-pill"><div class="type-icon">⇄</div><div><div class="type-name">Workflow</div><div class="type-use">Multi-step process prompts — SOPs, automation sequences, systems.</div></div></div>
+  <div class="type-pill"><div class="type-icon">□</div><div><div class="type-name">Framework</div><div class="type-use">Reusable prompt templates you can apply across different topics.</div></div></div>
+  <div class="type-pill"><div class="type-icon">⚙</div><div><div class="type-name">Tooling</div><div class="type-use">Business operations — lead generation, bookkeeping, client communication prompts.</div></div></div>
+</div>
+
+<div class="callout amber">⚠️ <div><strong>Idea, Hook, and Script are the pipeline types.</strong> They are designed to link together — an idea feeds into a hook, a hook feeds into a script. The other five types (Generator, Analysis, Workflow, Framework, Tooling) are standalone and don't have pipeline fields.</div></div>
+
+
+<!-- 3. STEPS -->
+<div class="sec-label" id="steps">03 — Step-by-step walkthrough</div>
+<h2>What each step is asking for</h2>
+<p>Every prompt type moves through 6–7 steps. Here is what each step means and what to put in it.</p>
+
+<div class="card gold">
+  <div class="step-flow">
+    <div class="step-row">
+      <div class="step-num">01</div>
+      <div><div class="step-name">Type select</div><div class="step-desc">Choose which of the 8 prompt types you're building. The rest of the builder adapts to your choice.</div><div class="step-tip">If you're not sure, start with Idea. It's the broadest starting point.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">02</div>
+      <div><div class="step-name">Foundation</div><div class="step-desc">The core brief — your topic or niche, which platform(s) it's for, what the content goal is, and how much output you want. This is the most important step — everything else is layered on top of it.</div><div class="step-tip">Be specific on the topic. "Small business bookkeeping" outperforms "finance" every time.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">03</div>
+      <div><div class="step-name">Strategy / Mechanics</div><div class="step-desc">Type-specific depth. For Idea: trend approach and differentiation. For Hook: psychological mechanisms and emotional triggers. For Script: framework and structure. This is where the prompt gets opinionated.</div><div class="step-tip">Even if you're unsure, pick something. A wrong constraint is easier to adjust than a blank one.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">04</div>
+      <div><div class="step-name">Audience</div><div class="step-desc">Who the content is for. Target audience description, awareness level (how well they know the problem), emotional triggers that resonate, and pain points. The AI uses this to make output feel targeted rather than generic.</div><div class="step-tip">The pain points field is worth filling in carefully — it's the most direct way to stop generic AI output.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">05</div>
+      <div><div class="step-name">Constraints</div><div class="step-desc">Hard rules for the output. Output format, tone, words to avoid, reasoning approach, and self-check instructions. This step is what separates a prompt that produces consistent results from one that varies wildly.</div><div class="step-tip">"Words to avoid" is underused. Put in the words that make AI content sound like AI: seamlessly, leverage, game-changer, unlock, delve.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">06</div>
+      <div><div class="step-name">Iteration</div><div class="step-desc">Tracking fields for your Notion library. Domain, version number, score (fill this after testing), priority, and which Notion databases to link it to. Also where you write iteration notes — what changed in this version.</div><div class="step-tip">Domain and Version are required before you can build. Everything else is optional but worth filling in if you're saving to Notion.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="callout green">✓ <div><strong>Required fields:</strong> Foundation (topic + platform + goal) and Iteration (domain + version) are the only mandatory fields. Everything else improves output quality but won't block the build.</div></div>
+
+
+<!-- 4. PIPELINE -->
+<div class="sec-label" id="pipeline">04 — Linking prompts together</div>
+<h2>The Idea → Hook → Script pipeline</h2>
+<p>The three content pipeline types are designed to build on each other. You don't have to use all three — you can start at any stage — but when you do link them, the output at each stage is grounded in the work you already did.</p>
+
+<div class="pipeline">
+  <div class="pipe-node idea">✦ Idea<br><span style="font-size:11px;font-weight:400">What to make</span></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node hook">↗ Hook<br><span style="font-size:11px;font-weight:400">How to open it</span></div>
+  <div class="pipe-arrow">→</div>
+  <div class="pipe-node script">▣ Script<br><span style="font-size:11px;font-weight:400">The full content</span></div>
+</div>
+
+<h3>How to pass an idea into a Hook build</h3>
+<p>On the <strong>Hook Foundation step</strong>, you'll see a field called <strong>Prior idea (optional)</strong>. Paste the full assembled prompt output from your Idea build here — or just paste the specific idea you chose from the AI's output. The builder injects this as a <code>SOURCE IDEA</code> block in the hook prompt, so the AI writes hooks that are grounded in that specific angle rather than generating hooks based on the topic alone.</p>
+
+<div class="callout blue">💡 <div><strong>What to paste:</strong> You have two options. Paste the entire assembled Idea prompt (from the dark code block on the output screen) for maximum context — or just paste the specific idea text from the AI's response if you've already run it and chosen one. Either works.</div></div>
+
+<h3>How to pass a hook (and idea) into a Script build</h3>
+<p>On the <strong>Script Foundation step</strong>, you'll see two separate optional fields:</p>
+
+<table class="field-table">
+  <thead><tr><th>Field</th><th>What to paste</th><th>What it does</th></tr></thead>
+  <tbody>
+    <tr><td>Prior hook</td><td>The specific hook line you chose from the AI's hook output</td><td>Tells the AI to use this exact line as the script's opening — it won't rewrite it</td></tr>
+    <tr><td>Prior idea</td><td>The original idea brief or assembled Idea prompt</td><td>Keeps the script true to the original angle, audience, and goal</td></tr>
+  </tbody>
+</table>
+
+<p>You can fill one, both, or neither. If you fill the Prior hook field, the AI opens the script with your chosen hook. If you also fill the Prior idea field, the whole script stays oriented around the original brief — the hook, the body, and the CTA all point in the same direction.</p>
+
+<div class="card green">
+  <h3>Full pipeline example — step by step</h3>
+  <ol style="list-style:none;counter-reset:ex;padding:0">
+    <li style="counter-increment:ex;display:flex;gap:12px;margin-bottom:10px;font-size:14px;color:var(--muted)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--dark);color:#fff;border-radius:6px;padding:2px 8px;flex-shrink:0;height:fit-content;margin-top:2px">1</span><div><strong style="color:var(--dark)">Build an Idea prompt.</strong> Select Idea type, fill in your niche (e.g. "bookkeeping for small businesses"), platform, goal. Build it. Copy the prompt and run it in Claude. Pick the best idea from the output.</div></li>
+    <li style="counter-increment:ex;display:flex;gap:12px;margin-bottom:10px;font-size:14px;color:var(--muted)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--dark);color:#fff;border-radius:6px;padding:2px 8px;flex-shrink:0;height:fit-content;margin-top:2px">2</span><div><strong style="color:var(--dark)">Build a Hook prompt using that idea.</strong> Select Hook type, fill in the topic, then paste the idea you chose into the <em>Prior idea</em> field on the Foundation step. Build it. Run it in Claude. Pick the strongest hook.</div></li>
+    <li style="counter-increment:ex;display:flex;gap:12px;margin-bottom:10px;font-size:14px;color:var(--muted)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--dark);color:#fff;border-radius:6px;padding:2px 8px;flex-shrink:0;height:fit-content;margin-top:2px">3</span><div><strong style="color:var(--dark)">Build a Script prompt using that hook.</strong> Select Script type. Fill in the topic, format, structure. Paste your chosen hook into <em>Prior hook</em> and your original idea into <em>Prior idea</em>. Build it. The script will open with your exact hook and stay aligned with the original brief.</div></li>
+    <li style="counter-increment:ex;display:flex;gap:12px;font-size:14px;color:var(--muted)"><span style="font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--dark);color:#fff;border-radius:6px;padding:2px 8px;flex-shrink:0;height:fit-content;margin-top:2px">4</span><div><strong style="color:var(--dark)">Save all three to a project.</strong> On the output screen, use the Save to Project panel to link each stage to the same project. The pipeline tracker at the bottom of the builder shows which stages are complete and lets you revisit any prompt.</div></li>
+  </ol>
+</div>
+
+<h3>Using the context carry-over (automatic field mapping)</h3>
+<p>There's also a faster option on Step 1 — the <strong>Paste prior context</strong> link under the type cards. If you paste a previous prompt output here before selecting a type, the builder will automatically extract the topic, platform, audience, and tone and pre-fill the matching fields when you continue. This works best when the prior prompt has clearly labeled lines like <code>TOPIC:</code>, <code>PLATFORM:</code>, <code>AUDIENCE:</code>.</p>
+<p>This is an auto-fill shortcut. The Prior idea and Prior hook fields on Foundation are the deliberate, explicit way to link stages — use those when you want full control.</p>
+
+
+<!-- 5. OUTPUT SCREEN -->
+<div class="sec-label" id="output">05 — Reading the output screen</div>
+<h2>What you get after hitting Build</h2>
+<p>After completing the Iteration step and clicking <strong>Build prompt ↗</strong>, the builder shows the output screen. Here's what each section is.</p>
+
+<table class="field-table">
+  <thead><tr><th>Section</th><th>What it is</th><th>What to do with it</th></tr></thead>
+  <tbody>
+    <tr><td>Suggested Notion title</td><td>Auto-generated title in the format: Type — Platform — Topic — Version</td><td>Edit if needed, then copy and paste as the Notion entry name</td></tr>
+    <tr><td>Assembled prompt</td><td>The complete structured prompt built from all your inputs</td><td>Copy this and paste it into Claude, ChatGPT, or your target AI tool</td></tr>
+    <tr><td>Notion fields summary</td><td>All your iteration fields (domain, version, score, priority, linked databases) in labeled tiles</td><td>Use as a reference when filling in the Notion entry — or use Copy all fields</td></tr>
+    <tr><td>Layer summary</td><td>Every field you filled in, organized by step, with gold left-border styling</td><td>Paste into the Notion page body as your build notes — documents what choices produced this prompt</td></tr>
+    <tr><td>Save to project</td><td>Dropdown of your existing projects + save button</td><td>Select the project this prompt belongs to and save — optional, only needed if tracking a pipeline</td></tr>
+    <tr><td>Copy all fields</td><td>Copies the full entry in plain text — title, Notion fields, layer notes, and full prompt</td><td>One-click paste into Notion page body</td></tr>
+    <tr><td>← Back to iteration</td><td>Returns to the last step without losing any data</td><td>Use if you missed a field on iteration before building</td></tr>
+    <tr><td>Build another</td><td>Resets the builder for a new prompt</td><td>Shows a confirm modal — your snapshots and projects are preserved</td></tr>
+  </tbody>
+</table>
+
+
+<!-- 6. PROJECTS -->
+<div class="sec-label" id="projects">06 — Projects and the pipeline tracker</div>
+<h2>Tracking a piece of content from idea to script</h2>
+<p>Projects are completely optional. Every build works standalone — you can build prompts, copy them, and use them without ever creating a project. Projects are only useful when you want to track a piece of content through the full Idea → Hook → Script pipeline and be able to come back to any stage later.</p>
+
+<h3>Creating a project</h3>
+<p>Click <strong>+ New project</strong> on Step 1 or in the Project Pipeline Tracker panel at the bottom of the page. Give it a name that identifies the content piece — e.g. "Bookkeeping Reel — March" or "Lead Gen Campaign Q2". One project = one piece of content.</p>
+
+<h3>The pipeline tracker</h3>
+<p>The tracker panel at the bottom of the page always shows all your projects. Each project displays a three-stage pipeline: Idea → Hook → Script. Stages that have been saved show in green. Click any completed stage node to expand it and see the prompt preview, copy the prompt, or load it as context for the next build.</p>
+
+<div class="callout amber">⚠️ <div><strong>Projects only auto-save Idea, Hook, and Script types.</strong> The other five types (Generator, Analysis, Workflow, Framework, Tooling) don't appear in the pipeline tracker — save those using the snapshot function instead.</div></div>
+
+<h3>Saving a build to a project</h3>
+<p>After building, the output screen shows a <strong>Save to project</strong> panel. Select the project from the dropdown and click Save. If you don't have a project yet, click "+ Create project to save" to create one inline. The tracker updates immediately.</p>
+
+<h3>Using a saved stage as context for the next build</h3>
+<p>In the tracker, expand any completed stage and click <strong>Use as context →</strong>. This resets the builder to Step 1 with the prior prompt pre-loaded into the context carry-over box. Select your next type and hit Continue — the builder auto-fills topic, platform, audience, and tone from the prior output.</p>
+
+
+<!-- 7. SNAPSHOTS -->
+<div class="sec-label" id="snapshots">07 — Snapshots</div>
+<h2>Saving versions of your work mid-build</h2>
+<p>Snapshots are lightweight saves of the current prompt at any point during a build — before you've finished all the steps. They're useful when you want to experiment with different constraint combinations without losing a working version.</p>
+
+<p>Click <strong>Save snapshot</strong> in the Session Tools card at the bottom of any step. The builder saves the current assembled prompt (with whatever fields are filled so far), the version note, and a timestamp. You can save up to 10 snapshots per session.</p>
+
+<p>Click <strong>View snapshots</strong> to see all saved snapshots. Each one shows the title, timestamp, and iteration notes, with a Copy prompt button to retrieve it.</p>
+
+<div class="callout blue">💡 <div><strong>Snapshots vs Projects:</strong> Snapshots are temporary in-session saves — good for capturing a work-in-progress state. Projects are persistent saves of completed builds linked to a pipeline. Use snapshots while building; use projects for finished output.</div></div>
+
+
+<!-- 8. NOTION -->
+<div class="sec-label" id="notion">08 — Saving to Notion</div>
+<h2>Adding a completed prompt to your Prompt Library</h2>
+<p>The builder is designed to output directly into a Notion Prompt Library. Here's the exact process:</p>
+
+<div class="card gold">
+  <div class="step-flow">
+    <div class="step-row">
+      <div class="step-num">1</div>
+      <div><div class="step-name">Open Notion Prompt Library → New entry</div><div class="step-desc">Create a new page in your Notion Prompt Library database.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">2</div>
+      <div><div class="step-name">Paste the suggested title</div><div class="step-desc">Copy the title from the builder output screen and paste it as the entry name. Format is: Type — Platform — Topic — Version.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">3</div>
+      <div><div class="step-name">Fill Notion field columns</div><div class="step-desc">Use the Notion Fields summary on the output screen as your reference — Domain, Prompt Type, Platform, Version, Score, Status, Priority, Linked to. Or use Copy all fields and paste the whole block.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">4</div>
+      <div><div class="step-name">Paste the full prompt into the page body</div><div class="step-desc">Open the Notion entry page. Paste the assembled prompt (from the dark code block) into the page body. This is the actual prompt text you use.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">5</div>
+      <div><div class="step-name">Paste the layer summary below it</div><div class="step-desc">Paste the layer summary below the prompt as build notes — documents every choice that produced this version so you can replicate or adjust it later.</div></div>
+    </div>
+    <div class="step-row">
+      <div class="step-num">6</div>
+      <div><div class="step-name">Fill Score after testing</div><div class="step-desc">Run the prompt in your AI tool. Grade the output 1–10 in the Score column. Use iteration notes to record what worked and what to change in V2.</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="callout green">✓ <div><strong>Tip:</strong> Leave Score blank on first save. Only fill it after you've actually run the prompt and seen the output quality. A score without a real test is just a guess.</div></div>
+
+
+<!-- 9. TIPS -->
+<div class="sec-label" id="tips">09 — Tips for better prompts</div>
+<h2>What actually moves the needle</h2>
+
+<div class="card blue">
+  <h3>The fields that matter most</h3>
+  <p>In rough order of impact on output quality:</p>
+  <ol style="padding-left:20px;font-size:14px;color:var(--muted);line-height:2">
+    <li><strong style="color:var(--dark)">Topic / niche</strong> — specific beats vague every time</li>
+    <li><strong style="color:var(--dark)">Pain points</strong> — the fastest way to stop generic AI output</li>
+    <li><strong style="color:var(--dark)">Words to avoid</strong> — eliminates the most common AI tells</li>
+    <li><strong style="color:var(--dark)">Self-check instruction</strong> — makes the AI review its own output before returning it</li>
+    <li><strong style="color:var(--dark)">Prior context fields</strong> — keeps linked prompts coherent</li>
+    <li><strong style="color:var(--dark)">Reasoning approach</strong> — use Step-by-step for complex tasks, Fastest path for bulk output</li>
+  </ol>
+</div>
+
+<div class="card plum">
+  <h3>Words to always put in "Words to avoid"</h3>
+  <p style="font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:2;color:var(--ink)">
+    seamlessly, leverage, game-changer, unlock, delve, it's important to note, in today's fast-paced world, revolutionary, cutting-edge, dive deep, at the end of the day, paradigm shift, synergy, holistic, empower, transformative
+  </p>
+  <p>These are the words that make AI output sound like AI output. Excluding them forces more natural language.</p>
+</div>
+
+<div class="card rust">
+  <h3>Version discipline</h3>
+  <p>Start every new prompt at V1. Only increment to V2 when you've actually tested V1 and identified specific changes to make. A V3 prompt that was never tested isn't a V3 — it's a guess with extra steps. The Score column in Notion is where version decisions should come from.</p>
+</div>
+
+
+<!-- 10. FAQ -->
+<div class="sec-label" id="faq">10 — FAQ</div>
+<h2>Common questions</h2>
+
+<div class="faq-item">
+  <div class="faq-q">Do I need to create a project to use the builder?</div>
+  <div class="faq-a">No. Projects are optional. You can build, copy, and use prompts without ever creating a project. Projects are only useful when you want to track a content piece through multiple pipeline stages and come back to prior work.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">What's the difference between a snapshot and saving to a project?</div>
+  <div class="faq-a">Snapshots are in-session saves of a work-in-progress prompt — useful for preserving a state before making changes. Project saves are permanent records of a completed build linked to a content pipeline. Use snapshots while building, projects when you're done.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">Can I use a hook I already have — one I didn't build with this tool?</div>
+  <div class="faq-a">Yes. Just paste it directly into the Prior hook field on the Script Foundation step. It doesn't have to come from the builder. Same with the Prior idea field — paste any idea, brief, or prior AI output you want to build from.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">The context carry-over didn't fill my fields automatically. What happened?</div>
+  <div class="faq-a">The auto-fill looks for specific labeled lines in the pasted text — TOPIC:, PLATFORM:, AUDIENCE:, TONE:. If the prior output doesn't have those labels, auto-fill won't find anything to map. The raw text still gets appended to the prompt as PRIOR CONTEXT, so the AI still has it — you just won't see the fields pre-filled. Use the Prior idea / Prior hook fields on Foundation for more reliable explicit linking.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">What does "Send to Claude ↗" do?</div>
+  <div class="faq-a">It copies the assembled prompt to your clipboard and shows an alert to paste it into Claude. If you're running the builder inside Claude's artifact viewer, it may attempt to send the prompt directly. In all other environments (GitHub Pages, local file, Notion embed) it's a copy + prompt to paste manually.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">I lost my progress after refreshing the page. What happened?</div>
+  <div class="faq-a">The builder auto-saves your current state to localStorage, which persists across refreshes. However, localStorage doesn't survive clearing browser data, private/incognito mode, or some embedded contexts (Notion embeds may not share localStorage with the main browser). If you're doing important work, use Save snapshot before leaving the page — snapshots are also stored in localStorage but are kept separately from the build state.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">Can I use the same idea for different content formats?</div>
+  <div class="faq-a">Yes — that's one of the intended workflows. Build an Idea prompt once, run it in Claude, get a list of ideas. Then start separate builds for each format you want: one Hook build for Reels, another Hook build for email subject lines, a Script build for the video. Each builds from the same source idea but is independently optimized for its format.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">The builder says a field is required but I don't know what to put in it.</div>
+  <div class="faq-a">The only hard requirements are Topic (or Outcome for general types) on Foundation, and Domain + Version on Iteration. For Domain, pick the closest category — you can change it in Notion later. For Version, start at V1 if it's new. If you're stuck on Topic, use the broadest accurate description of what you're making content about — you can refine it in iteration notes after testing.</div>
+</div>
+
+<div class="faq-item">
+  <div class="faq-q">How do I improve a prompt that isn't giving good results?</div>
+  <div class="faq-a">Start with the Constraints step — specifically Words to avoid, Self-check, and Reasoning approach. Then look at Audience — shallow pain points produce generic output. Finally check the Prior context fields if you're linking pipeline stages — if the source material is vague, the downstream prompt will be too. Increment the version, note what changed in Iteration notes, and re-test.</div>
+</div>
+
+</div>
+</body>
+</html>
